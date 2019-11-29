@@ -1,0 +1,78 @@
+{
+  "mapping": {
+    "properties": {
+      "article_content_fingerprint": {
+        "type": "keyword"
+      },
+      "article_detail_id": {
+        "type": "long"
+      },
+      "article_extracted_time": {
+        "type": "date"
+      },
+      "article_pubtime": {
+        "type": "date"
+      },
+      "article_record_md5_id": {
+        "type": "keyword"
+      },
+      "article_title_fingerprint": {
+        "type": "keyword"
+      },
+      "client_id": {
+        "type": "long"
+      },
+      "created_time": {
+        "type": "date"
+      },
+      "domain_code": {
+        "type": "keyword"
+      },
+      "domain_score": {
+        "type": "integer"
+      },
+      "emotion_type": {
+        "type": "byte"
+      },
+      "junk_score": {
+        "type": "integer"
+      },
+      "media_type_code": {
+        "type": "keyword"
+      },
+      "relative_score": {
+        "type": "integer"
+      },
+      "sentiment_score": {
+        "type": "integer"
+      },
+      "similar_record_oldest_id": {
+        "type": "long"
+      },
+      "source_type": {
+        "type": "keyword"
+      },
+      "subject_id": {
+        "type": "long"
+      },
+      "total_score": {
+        "type": "integer"
+      },
+      "user_confirm_emotion_type": {
+        "type": "byte"
+      },
+      "user_id": {
+        "type": "long"
+      },
+      "user_last_process_time": {
+        "type": "date"
+      },
+      "user_process_status": {
+        "type": "keyword"
+      },
+      "website_no": {
+        "type": "keyword"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+
+# 数据库配置
+DB:
+  host: 192.168.1.116
+  port: 3306
+  user: mmt_app
+  password: xxx
+  db: mymonitor
+  charset: utf8mb4
+
+# Others
+
