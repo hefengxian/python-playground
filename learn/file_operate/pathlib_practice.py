@@ -59,3 +59,73 @@ print(os.fspath(PurePath('/usr/local/nginx')))
 # 另外 str(PurePath) 会表示成路径对应系统下的表示法，比如 Windows 下的反斜杠
 print(PureWindowsPath('c://Program Files'))  # c:\Program Files
 print(PureWindowsPath('//host/share/myfile'))  # \\host\share\myfile
+
+
+# PurePath 属性
+# PurePath.parts
+print(PurePath('/etc/ssh/sshd.conf').parts)  # ('/', 'etc', 'ssh', 'sshd.conf')
+print(PureWindowsPath('c:/windows/system32').parts)  # ('c:\\', 'windows', 'system32')
+
+# PurePath.drive
+print(PureWindowsPath('C:/Program Files/Python').drive)  # C:
+print(PureWindowsPath('/Program Files/Python').drive)  # ''
+print(PurePath('/usr').drive)  # ''
+print(PureWindowsPath('//host/share/file.txt').drive)  # \\host\share
+
+# PurePath.root
+print(PureWindowsPath('C://windows').root)  # \
+print(PureWindowsPath('c:windows').root)  # ''
+print(PurePosixPath('/etc').root)  # /
+print(PureWindowsPath('//host/share').root)  # \
+print(PurePosixPath('//host/file').root)  # //
+print(PurePosixPath('///etc').root)  # /
+print(PurePosixPath('/////usr/share').root) # /
+
+# PurePath.anchor 驱动器 + 根
+print(PureWindowsPath('C:/Program Files').anchor)  # C:\
+print(PureWindowsPath('c:windows').anchor)  # c:
+print(PureWindowsPath('//host/share/text.txt').anchor)  # \\host\share\
+
+# PurePath.parents 3.10 可以支持负索引切片
+print(tuple(PureWindowsPath('c:/foo/bar/text.txt').parents))  # (PureWindowsPath('c:/foo/bar'), PureWindowsPath('c:/foo'), PureWindowsPath('c:/'))
+
+# PurePath.parent 逻辑父路劲
+print(PurePosixPath('/a/b/c/d').parent)  # /a/b/c
+# 不能超过 anchor 或者空路径
+print(PurePosixPath('/').parent)  # /
+print(PurePosixPath('.').parent)  # .
+# 这只是一个字符串运算而不能解析 `..`，只是路劲向后退一级
+print(PurePosixPath('foo/../').parent)
+
+# PurePath.name 最后路径的字符串，无论是目录还是文件
+print(PurePosixPath('my/file/text.txt').name)  # text.txt
+print(PurePosixPath('/etc/apt/').name)  # apt
+# UNC 驱动器的目录不会被考虑（就是 host 后面的第一个路径，再之后的还是会被识别无论目录还是文件）
+print(PureWindowsPath('//host/share/my.cnf').name)  # my.cnf
+print(PureWindowsPath('//host/share').name)  # ''
+
+# PurePath.suffix 单个后缀，是带点的
+print(PurePath('file.mp4').suffix)  # .mp4
+print(PurePath('file.tar.gz').suffix)  # .gz
+print(PurePath('/etc/sudo').suffix)  # ''
+
+# PurePath.suffixes
+print(PurePath('file.tar.gz').suffixes)  # ['.tar', '.gz']
+print(PurePath('/etc/profile').suffixes)  # []
+
+# PurePath.stem 去掉后缀的名称
+print(PurePath('/usr/share/mylog.log').stem)  # mylog
+print(PurePath('/usr/profile').stem)  # profile
+
+# PurePath 方法
+# PurePath.as_posix()
+# PurePath.as_uri()
+# PurePath.is_absolute()
+# PurePath.is_relative_to(*other))
+# PurePath.is_reserved()
+# PurePath.joinpath(*other)
+# PurePath.match(pattern)
+# PurePath.relative_to(*other)
+# PurePath.with_name(name)
+# PurePath.with_stem(stem)
+# PurePath.with_suffix(suffix)
