@@ -119,13 +119,58 @@ print(PurePath('/usr/profile').stem)  # profile
 
 # PurePath 方法
 # PurePath.as_posix()
-# PurePath.as_uri()
-# PurePath.is_absolute()
-# PurePath.is_relative_to(*other))
-# PurePath.is_reserved()
-# PurePath.joinpath(*other)
-# PurePath.match(pattern)
-# PurePath.relative_to(*other)
-# PurePath.with_name(name)
-# PurePath.with_stem(stem)
-# PurePath.with_suffix(suffix)
+print(PureWindowsPath('c:\\windows').as_posix())  # c:/windows
+
+# PurePath.as_uri() 表示成 file URI 的模式，必须是绝对路径
+# print(PureWindowsPath('Program Files/text.txt').as_uri())  # ValueError
+print(PureWindowsPath('d:/Program Files').as_uri())  # file:///d:/Program%20Files
+print(PurePosixPath('/etc/test.txt').as_uri())  # file:///etc/test.txt
+
+# PurePath.is_absolute() 是否为绝对路径，这里指的是同时包含 驱动盘 + 根路径
+print(PureWindowsPath('c://windows').is_absolute())  # True
+print(PureWindowsPath('//host/share').is_absolute())  # True
+print(PureWindowsPath('c:').is_absolute())  # False 没有包含根路径，只有驱动器
+print(PurePosixPath('/c/b/d').is_absolute())  # True
+
+# PurePath.is_relative_to(*other))  3.9 的新功能
+print(PurePosixPath('/etc/passwd').is_relative_to('/etc'))  # True
+print(PurePosixPath('/etc/passwd').is_relative_to('/usr'))  # False
+
+# PurePath.is_reserved() 是否为被保留，这个POSIX总是返回 False 主要是 Windows
+print(PureWindowsPath('nul').is_reserved())  # True
+print(PurePosixPath('nul').is_reserved())  # False
+
+# PurePath.joinpath(*other) 就是连接路径
+print(PurePosixPath('/etc').joinpath('apt', PurePosixPath('apt.sourcelist')))  # /etc/apt/apt.sourcelist
+print(PureWindowsPath('d:\\\\').joinpath('program files', 'Python'))  # d:\program files\Python
+
+# PurePath.match(pattern) 需要注意绝对路径的 pattern 那么只能匹配绝对路径的，大小写是否敏感主要看平台
+print(PurePath('a/b.py').match('*.py'))  # True
+print(PurePath('/a/b/c.py').match('b/*.py'))  # True
+print(PurePath('/a/b/c.py').match('/a/*.py'))  # False
+
+print(PurePath('/a.py').match('/*.py'))  # True
+print(PurePath('a/b.py').match('/*.py'))  # False
+
+print(PurePosixPath('a.py').match('*.PY'))  # False
+print(PureWindowsPath('a.PY').match('*.py'))  # True
+
+# PurePath.relative_to(*other) 计算相对路径，如果不可计算抛出 ValueError
+print(PurePosixPath('/etc/passwd').relative_to('/'))  # etc/passwd
+print(PurePosixPath('/etc/passwd').relative_to('/etc'))  # passwd
+# print(PurePosixPath('/ect/passwd').relative_to('/usr'))  # ValueError
+
+# PurePath.with_name(name) 返回新名字的路径，如果原名字不存在会抛出 ValueError （文件重命名利器）
+print(PureWindowsPath('c:/Users/Download/setup.py').with_name('setup.exe'))  # c:\Users\Download\setup.exe
+# print(PureWindowsPath('c:/').with_name('text.txt'))  # ValueError
+
+# PurePath.with_stem(stem)  3.9 新功能，返回新修改 stem 的路径，如果路径没有 stem 抛出 ValueError 多后缀的文件会损失掉多的后缀
+print(PureWindowsPath('c:/Users/Download/test.py').with_stem('setup'))  # c:\Users\Download\setup.py
+print(PurePosixPath('/home/user/data.tar.gz').with_stem('test'))  # /home/user/test.gz
+# print(PureWindowsPath('c:/').with_stem('test'))  # ValueError
+
+# PurePath.with_suffix(suffix) 修改后缀名，如果之前没有后缀那么会加上新的后缀，如果之前有后缀 suffix 为空字符串那么会移除后缀
+print(PurePosixPath('/usr/share/test.pyc').with_suffix('.py'))  # /usr/share/test.py
+print(PurePosixPath('text.tar.gz').with_suffix('.bz2'))  # text.tar.bz2
+print(PurePath('README').with_suffix('.md'))  # README.md
+print(PurePath('passwd.sh').with_suffix(''))  # passwd
