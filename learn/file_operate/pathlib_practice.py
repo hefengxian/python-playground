@@ -2,6 +2,7 @@
 这个文件是用来练习 pathlib 的，并且是在 macOS
 """
 
+import locale
 import os
 from pathlib import PurePath, Path, PurePosixPath, PureWindowsPath, WindowsPath, PosixPath
 
@@ -174,3 +175,95 @@ print(PurePosixPath('/usr/share/test.pyc').with_suffix('.py'))  # /usr/share/tes
 print(PurePosixPath('text.tar.gz').with_suffix('.bz2'))  # text.tar.bz2
 print(PurePath('README').with_suffix('.md'))  # README.md
 print(PurePath('passwd.sh').with_suffix(''))  # passwd
+
+
+# Path 除了提供 PurePath 功能之外，还提供了系统调用，并且不同平台不能随便串用
+# 这里只练习一些非常有用的操作
+# 并且顺带使用 os 或者 os.path 中对应的方法练习
+print(os.name)  # posix
+print(type(Path('setup.py')))  # <class 'pathlib.PosixPath'>
+print(isinstance(Path('/etc'), PurePath))  # True 继承自 PurePath
+# WindowsPath('c:\\windows')  # NotImplementedError: cannot instantiate 'WindowsPath' on your system
+
+# classmethod Path.cwd() 等于 os.getcwd() 获取当前工作目录的字符串
+print(Path.cwd(), os.getcwd())  # /Users/frank/workspace/python/python-playground
+
+# classmethod Path.home() 获取用户主目录，`~` os.path.expanduser()
+print(Path.home(), Path('~').expanduser(), os.path.expanduser('~'))  # /Users/frank /Users/frank /Users/frank
+
+# Path.stat(*, follow_symlinks=True) 返回一个 os.stat_result 对象，大概可以理解为文件的各种信息
+print(Path('~/.bashrc').expanduser().stat(), os.stat(os.path.expanduser('~/.bashrc')))
+# os.stat_result(st_mode=33188, st_ino=3377285, st_dev=16777220, st_nlink=1, st_uid=501, st_gid=20, st_size=427, st_atime=1596215767, st_mtime=1596215482, st_ctime=1596215482) os.stat_result(st_mode=33188, st_ino=3377285, st_dev=16777220, st_nlink=1, st_uid=501, st_gid=20, st_size=427, st_atime=1596215767, st_mtime=1596215482, st_ctime=1596215482)
+
+# Path.chmod(mode, *, follow_symlinks=True) 改变文件的模式和权限，和 chmod 命令 & os.chmod() 类似
+# Path.exists() 路径指定的文件是否存在，非常有用
+print(Path('noexists.file').exists(), Path('/home').exists())  # False True
+
+# Path.expanduser() 主要是解析 `~` 表示用户目录，等价于 os.path.expanduser()
+# Path.glob(pattern) 通配 pattern 的文件，用来遍历文件非常好用 `**` 表示递归遍历所有的目录、子目录
+for f in Path(__file__).parent.glob('**/*.py'):
+    print(f)  # /Users/frank/workspace/python/python-playground/learn/file_operate/pathlib_practice.py
+
+# Path.group() 返回文件的用户组，如果没有回抛出 KeyError
+print(Path(__file__).group(), Path(__file__).owner())  # staff frank
+
+# Path.is_dir() 是否为目录，非常有用
+print(Path('~').expanduser().is_dir())  # True
+
+# Path.is_file() 是否为文件，非常有用
+print(Path('~/.bashrc').expanduser().is_file())  # True
+
+# Path.is_mount() 是否为挂载点 Windows 没有这个功能
+# Path.is_symlink() 是否为符号链接
+# Path.is_socket() 是否为 socket 文件
+# Path.is_fifo() 是否为先进先出存储...
+# Path.is_block_device() 是否为块设备...
+# Path.is_char_device() 是否为字符设备
+# Path.iterdir() 如果是目录，遍历目录；不包含 `.` `..` 返回是没有顺序的
+print(list(Path(__file__).parent.iterdir()))  # [PosixPath('/Users/frank/workspace/python/python-playground/learn/file_operate/pathlib_practice.py')]
+
+# Path.lchmod(mode) 修改符号链接的模式
+# Path.lstat() 符号链接的属性
+# Path.mkdir(mode=0o777, parents=False, exist_ok=False) 创建文件夹 mode 权限，parents 是否递归创建目录，如果目录存在是否要报错，如果存在的是文件依然会报错
+# Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None) 和内置的 open() 一样，快捷范式，很好用要记住
+with Path('~/.bashrc').expanduser().open() as fp:
+    print(fp.readlines())  # ["alias ls='ls -G'\n", ...]
+
+# Path.owner() 返回拥有文件的用户
+# Path.read_bytes() 返回二进制内容的 bytes 对象
+print(Path('~/.bashrc').expanduser().read_bytes())  # b'alias ls=\'ls -G\'...'
+
+# Path.read_text(encoding=None, errors=None) 读取文本内容（看起来对于读取文本非常好用要记住，免得一通开关文件）
+print(Path('~/.bashrc').expanduser().read_text(encoding='utf-8'))
+
+# Path.readlink() 读取符号链接 os.readlink()
+# 这两个如果使用相对路径都是相对于 cwd
+# Path.rename(target) 重命名，返回新的路径，target 可以是 pathlike 这里要注意如果目标文件已经存在 Windows 下 FileExistsError，Posix 下如果有权限静默替换
+# Path.replace(target) 替换，返回新的路径，无条件替换为目标
+# Path.resolve(strict=False) 转换为绝对路径，这个会解析 `.` `..`
+print(Path('../setup.py').resolve())
+
+# Path.rglob(pattern) 递归遍历，相当于在 pattern 前面追加 `**/`
+# Path.rmdir() 删除目录，只能是空的
+# Path.samefile(other_path) 判断两个路径是不是指向同一个文件，类似 os.path.samefile() os.path.samestat()
+# Path.symlink_to(target, target_id_directory=False) 将此路径创建为指向 target 的符号链接
+# Path.hardlink_to(target) 设置硬链接
+# Path.touch(mode=0o666, exist_ok=True) 创建文件类似 touch 命令
+# Path.unlink(missing_ok=False) 删除文件、符号链接、目录
+# Path.write_bytes(data) 将文件以二进制模式打开，写入内容并关闭
+# Path.write_text(data, encoding=None, errors=None, newline=None) 写入文本，看起来非常好用
+p = Path('~/text.txt').expanduser()
+t = Path('~/test.txt').expanduser()
+print(p, t)  # /Users/frank/text.txt /Users/frank/test.txt
+p.write_text('Hello pathlib!')
+p = p.rename(t)
+print(p)  # /Users/frank/test.txt
+print(p.is_file(), p.is_dir())  # True False
+print(p.group(), p.owner())  # staff frank
+print(p.stat())  # os.stat_result(...)
+print(p.read_text())  # Hello pathlib!
+p.unlink()
+print(p.exists())  # False
+
+print(locale.getpreferredencoding())  # UTF-8 获取本地编码
+
